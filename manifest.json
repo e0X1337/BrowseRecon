@@ -1,0 +1,12 @@
+{
+  "name": "Recon Bookmarklets",
+  "description": "Wayback Machine, VirusTotal, and AlienVault recon tools",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": ["tabs", "scripting"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Recon Tools"
+  },
+  "host_permissions": ["<all_urls>"]
+}

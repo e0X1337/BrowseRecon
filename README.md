@@ -42,16 +42,14 @@ No setup. No scanning. Just click and pivot.
 
 ---
 
-## Configuration
+## Want to put in bookmarklet instead ?
+Have a read in here `https://medium.com/@jai.lani9001/weaponizing-bookmarklets-for-passive-recon-wayback-machine-virustotal-alienvault-9f4a736a1c8f`
 
-### VirusTotal API Key
+## Recon Bookmarklet
 
-Edit `popup.js` and replace:
+Copy the following one-liner into a new bookmark’s URL field (make sure to use valid apikey):
 
 ```javascript
-const apikey = 'YOUR_API_KEY_HERE';
+javascript:(function(){const domain=window.location.hostname;const vtKey='xxxxx';const win=window.open('about:blank');if(!win){alert("Popup blocked – allow popups for this site.");return;}win.document.write(`<p style="font-family:monospace;">Recon started for <b>${domain}</b>...<br>Fetching URLs from Wayback, VirusTotal & AlienVault.</p>`);const urls=new Set();const fetchWayback=()=>fetch(`https://corsproxy.io/?${encodeURIComponent(`https://web.archive.org/cdx/search/cdx?url=${domain}/*&fl=original&output=txt`)}`).then(r=>r.text()).then(t=>t.split('\n').forEach(u=>u&&urls.add(u.trim()))).catch(()=>{});const fetchVirusTotal=()=>fetch(`https://corsproxy.io/?https://www.virustotal.com/vtapi/v2/domain/report?apikey=${vtKey}&domain=${domain}`).then(r=>r.text()).then(t=>{const m=t.match(/https?:\/\/[^\s"%'<>\)]+/g);m&&m.forEach(u=>urls.add(u.trim()));}).catch(()=>{});const fetchAlienVault=()=>fetch(`https://otx.alienvault.com/api/v1/indicators/hostname/${domain}/url_list?limit=500`).then(r=>r.json()).then(j=>{j.url_list&&j.url_list.forEach(e=>urls.add(e.url.trim()));}).catch(()=>{});Promise.all([fetchWayback(),fetchVirusTotal(),fetchAlienVault()]).then(()=>{const all=Array.from(urls).filter(Boolean).sort();const esc=all.map(u=>u.replace(/</g,"&lt;").replace(/>/g,"&gt;")).join('\n');win.document.body.innerHTML=`<h2 style="font-family:sans-serif;">${all.length} unique URLs found</h2><pre style="white-space:pre-wrap;font-family:monospace;">${esc}</pre>`;});})();
 
-## Want to put in bookmarklet instead ?
-
-```javascript:(function(){  const domain = window.location.hostname;  const vtKey = 'xxxxx';  const win = window.open('about:blank');  if (!win) { alert("Popup blocked – allow popups for this site."); return; }  win.document.write(`<p style="font-family:monospace;">Recon started for <b>${domain}</b>...<br>Fetching URLs from Wayback, VirusTotal, and AlienVault.</p>`);  const urls = new Set();  const fetchWayback = () =>    fetch(`https://corsproxy.io/?${encodeURIComponent(`https://web.archive.org/cdx/search/cdx?url=${domain}/*&fl=original&output=txt`)}`)      .then(r => r.text())      .then(t => t.split(%27\n%27).forEach(u => u && urls.add(u.trim())))      .catch(() => {});  const fetchVirusTotal = () =>    fetch(`https://corsproxy.io/?https://www.virustotal.com/vtapi/v2/domain/report?apikey=${vtKey}&domain=${domain}`)      .then(r => r.text())      .then(t => {        const matches = t.match(/https?:\/\/[^\s"%27<>\\)]+/g);        if (matches) matches.forEach(u => urls.add(u.trim()));      })      .catch(() => {});  const fetchAlienVault = () =>    fetch(`https://otx.alienvault.com/api/v1/indicators/hostname/${domain}/url_list?limit=500`)      .then(r => r.json())      .then(j => {        if (j.url_list) j.url_list.forEach(entry => urls.add(entry.url.trim()));      })      .catch(() => {});  Promise.all([fetchWayback(), fetchVirusTotal(), fetchAlienVault()]).then(() => {    const all = Array.from(urls).filter(Boolean).sort();    const escaped = all.map(u => u.replace(/</g, "&lt;").replace(/>/g, "&gt;")).join(%27\n%27);    win.document.body.innerHTML = `<h2 style="font-family:sans-serif;">${all.length} unique URLs found</h2><pre style="white-space:pre-wrap; font-family:monospace;">${escaped}</pre>`;  });})();
 
